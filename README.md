@@ -1,8 +1,10 @@
 # MPC Random Kit Maker
 
-Generate random Akai MPC drum programs (`.xpm`) from your sample library. Drop the script next to your sample library, run it, get a self-contained kit folder ready for MPC software or hardware. Selection is 100% random. So, who knows what you'll get...good or bad. The script creates a cache of your sample library so subsequent kits will be made much more quickly than the first one. There are some options if you want more control. By default, it just kicks out kits.
+Generate random Akai MPC drum programs (`.xpm`) from your sample library. Drop the script next to your sample library, run it, get a self-contained kit folder ready for MPC software or hardware. Selection is 100% random. So, who knows what you'll get...good or bad. The script creates a cache of your sample library beneath the script, so subsequent kits will be made much more quickly than the first one. There are some options if you want more control. By default, it just kicks out kits. By default it fills four banks. Leaving you room to make more noise.
 
-To prep for MPC Sample, follow Kit Maker's second step. Check the video after this point..
+Remember, the script searches ALL directories underneath the script. Drop it at the root of a sample drive...its going to grab from the whole pool. But if you just want to pull from say 'Samples from Mars', put the script in the directory where those samples live. It will then be limited to those.
+
+To prep a kit for MPC Sample, follow Kit Maker's second step. Check the video after this point..
 https://youtu.be/HTqMvmkB0rA?t=51
 
 **Zero dependencies.** Python 3.6+ standard library only.
