@@ -59,10 +59,11 @@
 ## v2.0 (future ideas)
 
 ### Smarter sample selection
-- [ ] Category-aware selection — detect kick/snare/hat/etc. from filename or folder name and assign to appropriate pads
-- [ ] `--pattern` flag to specify a layout (e.g., `--pattern "kick,snare,hat,hat"` fills pads 1-4 accordingly)
-- [ ] Weight samples by folder depth or recency so "curated" top-level samples are preferred
+- [ ] Category-aware selection — detect kick/snare/hat/etc. from filename or folder name and assign to appropriate pads. Best to create at least 'basic' kit.
+- [ ] `--pattern` flag to specify a layout (e.g., `--pattern "kick,snare,hat,hat"` fills pads 1-8 accordingly)
 - [ ] `--exclude` glob to skip certain folders or filename patterns
+- [ ] Check for length of sample, if over four minutes, reject. 
+- [ ] put longer samples out on later pads. eg. Bank 4
 
 ### Kit variations
 - [x] ~~`--variations N`~~ → shipped as `--kits N` in v1.5
@@ -89,3 +90,14 @@
 - [ ] Support `.mp3`, `.flac`, `.ogg` (MPC software may accept these)
 - [ ] Test against MPC Live / MPC One / MPC X firmware versions
 - [ ] Generate MPC keygroup programs (`.xkp`) as an alternative to drum programs
+- [ ] Research preview creation
+
+## v3.0 (Upgrayd)
+
+### True UI
+- [ ] Create cross-platform executable for Mac, Linux, and Windows.
+- [ ] Allow user to specify path for samples
+- [ ] Allow user to reshuffle and get new samples
+- [ ] Allow user to test samples
+- [ ] Allow user to delete sample and refill.
+- [ ] Allow user to move samples around 4x4 simulated pads. 
