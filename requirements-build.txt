@@ -1,0 +1,6 @@
+# MPC RandoKitter — build requirements
+# Install with: pip install -r requirements-build.txt
+
+-r requirements.txt
+
+pyinstaller>=5.0.0

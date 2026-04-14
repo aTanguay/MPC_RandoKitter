@@ -1,0 +1,5 @@
+# MPC RandoKitter — runtime requirements
+# Note: only the GUI uses customtkinter. The CLI (mpc_random_kit.py)
+# runs on the Python stdlib alone with no installs.
+
+customtkinter>=5.0.0
