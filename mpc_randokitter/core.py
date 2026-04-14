@@ -449,3 +449,130 @@ def copy_samples_to_kit(selected_samples, out_dir, progress_cb: Optional[Callabl
     if progress_cb is None:
         print()  # newline after progress
     return dest_names
+
+# ---------------------------------------------------------------------------
+# XPM file writer
+# ---------------------------------------------------------------------------
+
+def write_xpm_file(root: ET.Element, xpm_path: str) -> None:
+    """Pretty-print an XPM tree and write to disk with MPC-compatible tags."""
+    tree = ET.ElementTree(root)
+    try:
+        ET.indent(tree, space="  ")
+    except AttributeError:
+        indent_xml(root)
+
+    buf = io.BytesIO()
+    buf.write(b'<?xml version="1.0" encoding="UTF-8"?>\n\n')
+    tree.write(buf, encoding="utf-8", xml_declaration=False)
+    xml_str = buf.getvalue().decode("utf-8")
+    xml_str = re.sub(r'<(\w+)\s*/>', r'<\1></\1>', xml_str)
+
+    with open(xpm_path, "w", encoding="utf-8") as f:
+        f.write(xml_str)
+
+# ---------------------------------------------------------------------------
+# Kit generation (single + orchestrator)
+# ---------------------------------------------------------------------------
+
+def generate_kit(
+    samples: List[str],
+    out_root: str,
+    kit_name: Optional[str] = None,
+    count: int = 64,
+    copy_progress_cb: Optional[Callable[[int, int], None]] = None,
+) -> str:
+    """Build one kit folder. Returns absolute path to the folder created.
+
+    `samples` is the pool to select from; `out_root` is the parent dir under
+    which the kit's folder will be created. `kit_name` of None = random.
+    """
+    count = min(count, 128, len(samples))
+    if kit_name is None:
+        kit_name = generate_fun_name()
+        ts = datetime.datetime.now().strftime("%Y%m")
+        folder_name = f"RandomKit_{kit_name}_{ts}"
+    else:
+        folder_name = kit_name
+
+    out_dir = os.path.join(os.path.abspath(out_root), folder_name)
+    os.makedirs(out_dir, exist_ok=True)
+
+    selected = random.sample(samples, count)
+    dest_names = copy_samples_to_kit(selected, out_dir, progress_cb=copy_progress_cb)
+
+    root = generate_xpm(kit_name, dest_names, pad_count=count)
+    write_xpm_file(root, os.path.join(out_dir, f"{kit_name}.xpm"))
+    return out_dir
+
+
+def generate_kits(
+    source_dir: str,
+    output_dir: str,
+    num_kits: int,
+    pads_per_kit: int = 64,
+    name_override: Optional[str] = None,
+    seed: Optional[int] = None,
+    progress_cb: Optional[Callable[[float, str], None]] = None,
+    cancel_event: Optional[threading.Event] = None,
+) -> List[str]:
+    """Full pipeline: cache/scan samples, generate N kits. Returns kit paths.
+
+    `progress_cb(fraction, status_text)` is called for UI updates; `fraction`
+    is 0.0-1.0, `status_text` is a human-readable phase message. Passing
+    `cancel_event` allows cooperative cancellation between kits.
+    """
+    def report(fraction: float, status: str) -> None:
+        if progress_cb:
+            progress_cb(fraction, status)
+
+    if seed is not None:
+        random.seed(seed)
+
+    source_dir = os.path.abspath(source_dir)
+    output_dir = os.path.abspath(output_dir)
+
+    report(0.0, "Loading sample index…")
+    samples = load_cache(source_dir)
+    if not samples:
+        skip_dirs = []
+        try:
+            for entry in os.scandir(source_dir):
+                if entry.is_dir() and (entry.name.startswith("random_kit_")
+                                       or entry.name.startswith("RandomKit_")):
+                    skip_dirs.append(os.path.abspath(entry.path))
+        except PermissionError:
+            pass
+
+        def scan_progress(count: int) -> None:
+            report(0.4, f"Scanning samples… {count:,} found")
+
+        samples = find_samples(source_dir, skip_dirs=skip_dirs,
+                               progress_cb=scan_progress)
+        if not samples:
+            raise RuntimeError(f"No .wav/.aif/.aiff files found under {source_dir}")
+        write_cache(source_dir, samples)
+
+    report(0.7, f"Found {len(samples):,} samples — generating kits…")
+
+    os.makedirs(output_dir, exist_ok=True)
+    kits = []
+    for kit_num in range(1, num_kits + 1):
+        if cancel_event is not None and cancel_event.is_set():
+            break
+
+        if name_override:
+            kit_name = name_override if num_kits == 1 else f"{name_override}_{kit_num}"
+        else:
+            kit_name = None  # generate_kit picks a random one
+
+        display_name = kit_name or "(random)"
+        report(0.7 + 0.3 * (kit_num - 1) / num_kits,
+               f"Generating kit {kit_num} of {num_kits}: {display_name}")
+
+        kit_path = generate_kit(samples, output_dir, kit_name=kit_name,
+                                count=pads_per_kit)
+        kits.append(kit_path)
+
+    report(1.0, f"Done — {len(kits)} kit(s) in {output_dir}")
+    return kits
