@@ -9,7 +9,20 @@ https://youtu.be/HTqMvmkB0rA?t=51
 
 **Zero dependencies.** Python 3.6+ standard library only.
 
-## Quick start
+## Download (no Python needed)
+
+Pre-built standalone apps live on the [Releases page](https://github.com/aTanguay/MPC_RandoKitter/releases). Grab the `.dmg` (macOS) or `.tar.gz` (Linux), open the app, point it at your samples folder, pick an output folder, and click Generate. No Python install required.
+
+## Run the GUI from source
+
+```bash
+pip install -r requirements.txt
+python3 MPC_RandoKitter.py
+```
+
+The GUI gives you a folder picker for samples and output, dropdowns for kit count (1–10) and pads per kit (16/32/64/128), and an optional kit name field. Progress runs in a background thread so the window stays responsive.
+
+## Run the CLI (zero dependencies)
 
 ```bash
 # From your samples folder — it asks how many kits you want
